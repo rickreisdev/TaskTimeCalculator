@@ -1,35 +1,66 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react";
+import { TimeEntryForm, TimeEntry } from "./components/TImeEntryForm";
+import "./App.css";
 
-function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+function parseTime(time: string): [number, number] {
+  const match = time.match(/(\d{1,2})h(\d{1,2})?/);
+  if (!match) return [0, 0];
+  return [parseInt(match[1]), parseInt(match[2] || "0")];
 }
 
-export default App
+function calculateWorkTime(start: string, end: string, lunch: string): number {
+  const [sh, sm] = parseTime(start);
+  const [eh, em] = parseTime(end);
+  const [lh, lm] = parseTime(lunch);
+  const startMin = sh * 60 + sm;
+  const endMin = eh * 60 + em;
+  const lunchMin = lh * 60 + lm;
+  return Math.max(0, endMin - startMin - lunchMin);
+}
+
+function App() {
+  const [entries, setEntries] = useState<TimeEntry[]>([]);
+  const [totalMinutes, setTotalMinutes] = useState<number | null>(null);
+
+  const addEntry = (entry: TimeEntry) => {
+    setEntries((prev) => [...prev, entry]);
+  };
+
+  const handleCalculate = () => {
+    const total = entries.reduce(
+      (sum, e) => sum + calculateWorkTime(e.start, e.end, e.lunch),
+      0
+    );
+    setTotalMinutes(total);
+  };
+
+  const decimalHours = totalMinutes ? (totalMinutes / 60).toFixed(2).replace('.', ',') : "0.00";
+  const formatted = totalMinutes
+    ? `${Math.floor(totalMinutes / 60)}h${String(totalMinutes % 60).padStart(
+        2,
+        "0"
+      )}`
+    : "0h00";
+
+  return (
+    <div style={{ padding: "1rem" }}>
+      <h1>Cálculo de Horas Trabalhadas na Task</h1>
+      <TimeEntryForm onAdd={addEntry} />
+      <ul>
+        {entries.map((e, i) => (
+          <li key={i}>
+            {e.start} - {e.end} (Almoço: {e.lunch})
+          </li>
+        ))}
+      </ul>
+      <button onClick={handleCalculate}>Confirmar</button>
+      {totalMinutes !== null && (
+        <p>
+          Tempo total: <strong>{decimalHours}</strong> horas ({formatted})
+        </p>
+      )}
+    </div>
+  );
+}
+
+export default App;
