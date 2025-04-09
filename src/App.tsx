@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { TimeEntryForm, TimeEntry } from "./components/TImeEntryForm";
+import { TimeEntryFormEsperado, TimeEntryEsperado } from "./components/modoEsperado/TImeEntryFormEsperado";
 import "./App.css";
 
 function parseTime(time: string): [number, number] {
@@ -19,10 +19,10 @@ function calculateWorkTime(start: string, end: string, lunch: string): number {
 }
 
 function App() {
-  const [entries, setEntries] = useState<TimeEntry[]>([]);
+  const [entries, setEntries] = useState<TimeEntryEsperado[]>([]);
   const [totalMinutes, setTotalMinutes] = useState<number | null>(null);
 
-  const addEntry = (entry: TimeEntry) => {
+  const addEntry = (entry: TimeEntryEsperado) => {
     setEntries((prev) => [...prev, entry]);
   };
 
@@ -45,7 +45,7 @@ function App() {
   return (
     <div style={{ padding: "1rem" }}>
       <h1>Cálculo de Horas Trabalhadas na Task</h1>
-      <TimeEntryForm onAdd={addEntry} />
+      <TimeEntryFormEsperado onAdd={addEntry} />
       <ul>
         {entries.map((e, i) => (
           <li key={i}>
